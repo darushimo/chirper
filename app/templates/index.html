@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        {% if current_user.is_authenticated %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <form action="{{ url_for('main.post') }}" method="post" id="chirpForm">
+                    <div class="d-flex mb-3">
+                        <img src="{{ current_user.get_avatar() }}" alt="Profile Picture" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                        <div class="flex-grow-1">
+                            <textarea class="form-control" id="chirpContent" name="body" rows="3" placeholder="What's happening?" maxlength="280" required></textarea>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Press ⌘+Return to post</small>
+                        <button type="submit" class="btn btn-primary float-end">Post</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        {% for post in posts %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex align-items-start mb-2">
+                    <img src="{{ post.author.get_avatar() }}" alt="Profile Picture" class="rounded-circle me-2" style="width: 48px; height: 48px; object-fit: cover;">
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="card-subtitle mb-1">
+                                <a href="{{ url_for('main.user', username=post.author.username) }}" class="text-decoration-none">
+                                    @{{ post.author.username }}
+                                </a>
+                            </h6>
+                            <small class="text-muted">{{ post.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </div>
+                        <p class="card-text">{{ post.body }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <img src="{{ current_user.get_avatar() }}" alt="Profile Picture" class="rounded-circle mb-2" style="width: 100px; height: 100px; object-fit: cover;">
+                    <h5 class="card-title">Welcome, @{{ current_user.username }}!</h5>
+                </div>
+                <p class="card-text">This is your home timeline. Follow other users to see their posts here.</p>
+                <a href="{{ url_for('main.explore') }}" class="btn btn-outline-primary w-100">Explore Posts</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chirpForm = document.getElementById('chirpForm');
+    const chirpContent = document.getElementById('chirpContent');
+
+    if (chirpContent) {
+        chirpContent.addEventListener('keydown', function(e) {
+            // Check for Command+Return (Mac) or Control+Return (Windows)
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+                e.preventDefault(); // Prevent default behavior
+                if (chirpContent.value.trim() !== '') {
+                    chirpForm.submit();
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
